@@ -122,7 +122,6 @@ class Blockchain {
             if(differenceInMinutes <= 5)
             {
                 const isVerified = bitcoinMessage.verify(message, address, signature);
-                console.log(isVerified)
                 if(isVerified){
                     const addedBlock = await this._addBlock(new BlockClass.Block({owner: address, star: star}));
                     resolve(addedBlock);
@@ -182,8 +181,6 @@ class Blockchain {
             try{
                 this.chain.forEach(block => {
                     const body = block.getBodyData();
-                    console.log(body);
-                    console.log(body.owner);
                     if(body.owner === address)
                     {
                         stars.push(block);
