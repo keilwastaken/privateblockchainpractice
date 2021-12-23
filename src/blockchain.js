@@ -64,10 +64,16 @@ class Blockchain {
     _addBlock(block) {
         return new Promise(async (resolve, reject) => {
             // Not the gensis block
-            try {
+                const isValid = (await this.validateChain().length == undefined);
+
+                if(!isValid)
+                {
+                    reject("we have been tampered with")
+                }
+
                 if(this.height > 0)
                 {
-                    block.previousBlockHash = this.chain[this.chain.length - 1].hash;
+                    block.previousBlockHash = this.chain[this.height - 1].hash;
                 }           
                 block.height = this.chain.length;
                 block.time =  new Date().getTime().toString().slice(0, -3); 
@@ -75,11 +81,7 @@ class Blockchain {
      
                 this.chain.push(block);
                 this.height = this.chain.length;    
-
                 resolve(block);
-            } catch(msg) {
-                reject(msg);
-            }
         });
     }
 
@@ -203,27 +205,23 @@ class Blockchain {
         let errorLog = []
         return new Promise(async (resolve, reject) => {
             let promises = [];
-            if(this.height < 0)
+            if(this.height > 0)
             {
-                return false;
-            } else if(this.height === 0){
-                return true;
-            }
-
-            for(let i = 0; i < this.height; i++)
-            {
-                promises.push(this.chain[i].block.validate())
-                const previousBlockHash = block.previousBlockHash;
-                const lastBlocksHash = this.chain[i - 1].hash 
-                //if our current blocks prevously chained hash is not equal to the last hash in our for loop we have been tampered with
-                if(previousBlockHash != lastBlocksHash)
+                for(let i = this.height -1; i > 0; i--)
                 {
-                    errorLog.push(`${previousBlockHash} and ${lastBlocksHash} are not equal something is seriously wrong`);
+                    promises.push(this.chain[i].validate())
+                    const previousBlockHash = this.chain[i].previousBlockHash;
+                    const lastBlocksHash = this.chain[i - 1].hash 
+                    //if our current blocks prevously chained hash is not equal to the last hash in our for loop we have been tampered with
+                    if(previousBlockHash != lastBlocksHash)
+                    {
+                        errorLog.push(`${previousBlockHash} and ${lastBlocksHash} are not equal something is seriously wrong`);
+                    }
                 }
             }
             Promise.all(promises).then((results) => {
                 for (let j = 0; j < results.length; j++) {
-                    if(!results[j].isvalid)
+                    if(!results[j].isValid)
                     {
                         errorLog.push(`block ${results[j].currentBlock} has been tampered with`);
                     }                      

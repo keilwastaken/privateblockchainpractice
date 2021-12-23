@@ -44,14 +44,15 @@ class Block {
             // Returning the Block is not valid
             // Returning the Block is valid
             const previousHash = hash;
-
             const correctBlock = {
+                hash: null ,
                 height: height,
                 body: body,
                 time: time,
-                previousBlockHash: previousBlockHash       
+                previousBlockHash: previousBlockHash,
             }
             const validBlockHash = SHA256(JSON.stringify(correctBlock)).toString()
+            console.log(validBlockHash)
 
             return previousHash === validBlockHash ? resolve({isValid: true}) : resolve({isValid: false, currentBlock: height})
         });
